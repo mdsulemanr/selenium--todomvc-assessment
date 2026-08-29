@@ -1,7 +1,11 @@
+import pytest
+
 from test_data.routes import ROUTES
 from test_data.todos import TODO_DATA
 
 
+@pytest.mark.smoke
+@pytest.mark.regression
 def test_add_and_complete_todos(todo_page):
     data = TODO_DATA["add_and_complete"]
     first_todo = data["first_todo"]
@@ -26,6 +30,7 @@ def test_add_and_complete_todos(todo_page):
     todo_page.assert_toggle_checked(second_todo, checked=False)
 
 
+@pytest.mark.regression
 def test_filter_behaviour_is_correct(todo_page):
     data = TODO_DATA["filter_scenario"]
     task_a = data["task_a"]

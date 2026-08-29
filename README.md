@@ -89,6 +89,8 @@ This v1 implementation is intentionally Chrome-only to match the original Playwr
 
 Project automation practices, locator priority, debugging workflow, and audit checklist are documented in [docs/AUTOMATION_STRATEGY.md](docs/AUTOMATION_STRATEGY.md).
 
+Git/GitHub workflow, future CI job strategy, environment handling, and artifact practices are documented in [docs/CI_CD_STRATEGY.md](docs/CI_CD_STRATEGY.md).
+
 ## Coverage
 
 - Add and complete todos

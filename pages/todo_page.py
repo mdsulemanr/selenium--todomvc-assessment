@@ -1,7 +1,7 @@
 from html import escape
 from time import monotonic
 
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -10,15 +10,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from config.settings import BASE_URL, DEFAULT_TIMEOUT
 from test_data.routes import ROUTES
-
-
-def xpath_literal(value: str) -> str:
-    if '"' not in value:
-        return f'"{value}"'
-    if "'" not in value:
-        return f"'{value}'"
-    parts = value.split('"')
-    return "concat(" + ', "\\\"", '.join(f'"{part}"' for part in parts) + ")"
 
 
 class TodoPage:
@@ -41,6 +32,18 @@ class TodoPage:
     def todo_count(self):
         return self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '[data-testid="todo-count"]')))
 
+    def _matching_todo_item(self, item_text: str):
+        for item in self.todo_items:
+            try:
+                title = item.find_element(By.CSS_SELECTOR, '[data-testid="todo-title"]')
+            except NoSuchElementException:
+                continue
+
+            if title.text.strip() == item_text:
+                return item
+
+        return False
+
     def open_fresh_todomvc(self):
         self.driver.get(f"{BASE_URL}{ROUTES['all']}")
         self.driver.execute_script("localStorage.clear();")
@@ -62,22 +65,16 @@ class TodoPage:
             return
 
     def todo_item(self, item_text: str):
-        text = xpath_literal(item_text)
-        locator = (
-            By.XPATH,
-            "//*[@data-testid='todo-item'][.//*[@data-testid='todo-title' "
-            f"and normalize-space()={text}]]",
-        )
-        return self.wait.until(EC.presence_of_element_located(locator))
+        return self.wait.until(lambda _: self._matching_todo_item(item_text))
 
     def visible_todo_item(self, item_text: str):
-        text = xpath_literal(item_text)
-        locator = (
-            By.XPATH,
-            "//*[@data-testid='todo-item'][.//*[@data-testid='todo-title' "
-            f"and normalize-space()={text}]]",
-        )
-        return self.wait.until(EC.visibility_of_element_located(locator))
+        def matching_visible_item(_):
+            item = self._matching_todo_item(item_text)
+            if item and item.is_displayed():
+                return item
+            return False
+
+        return self.wait.until(matching_visible_item)
 
     def todo_toggle(self, item_text: str):
         item = self.todo_item(item_text)
@@ -132,10 +129,4 @@ class TodoPage:
         assert self.todo_toggle(item_text).is_selected() is checked
 
     def assert_item_not_present(self, item_text: str):
-        text = xpath_literal(item_text)
-        locator = (
-            By.XPATH,
-            "//*[@data-testid='todo-item'][.//*[@data-testid='todo-title' "
-            f"and normalize-space()={text}]]",
-        )
-        self.wait.until(lambda _: len(self.driver.find_elements(*locator)) == 0)
+        self.wait.until(lambda _: self._matching_todo_item(item_text) is False)

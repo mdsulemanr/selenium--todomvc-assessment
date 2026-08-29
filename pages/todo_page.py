@@ -1,5 +1,7 @@
 from html import escape
+from time import monotonic
 
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webdriver import WebDriver
@@ -20,9 +22,10 @@ def xpath_literal(value: str) -> str:
 
 
 class TodoPage:
-    def __init__(self, driver: WebDriver):
+    def __init__(self, driver: WebDriver, action_delay: float = 0):
         self.driver = driver
         self.wait = WebDriverWait(driver, DEFAULT_TIMEOUT)
+        self.action_delay = action_delay
 
     @property
     def new_todo_input(self):
@@ -44,6 +47,19 @@ class TodoPage:
         self.driver.refresh()
         self.wait.until(EC.url_to_be(f"{BASE_URL}{ROUTES['all']}"))
         self.new_todo_input
+        self.pause_for_observation()
+
+    def pause_for_observation(self):
+        if self.action_delay <= 0:
+            return
+
+        deadline = monotonic() + self.action_delay
+        try:
+            WebDriverWait(self.driver, self.action_delay + 0.5, poll_frequency=0.1).until(
+                lambda _: monotonic() >= deadline
+            )
+        except TimeoutException:
+            return
 
     def todo_item(self, item_text: str):
         text = xpath_literal(item_text)
@@ -74,15 +90,22 @@ class TodoPage:
         input_box = self.new_todo_input
         input_box.clear()
         input_box.send_keys(item_text)
+        self.pause_for_observation()
         input_box.send_keys(Keys.ENTER)
         self.wait.until(lambda _: self.new_todo_input.get_attribute("value") == "")
         self.visible_todo_item(item_text)
+        self.pause_for_observation()
 
     def toggle_todo(self, item_text: str):
         toggle = self.todo_toggle(item_text)
         if not toggle.is_selected():
             toggle.click()
         self.wait.until(lambda _: self.todo_toggle(item_text).is_selected())
+        self.pause_for_observation()
+
+    def select_filter(self, name: str):
+        self.filter_link(name).click()
+        self.pause_for_observation()
 
     def assert_items_left(self, count: int):
         noun = "item left" if count == 1 else "items left"

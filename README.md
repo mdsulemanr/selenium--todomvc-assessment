@@ -61,15 +61,33 @@ Failure screenshots are saved to `screenshots/` and attached to the pytest-html 
 ```dotenv
 BASE_URL=https://demo.playwright.dev
 HEADLESS=true
+ACTION_DELAY=0
 ```
 
 - `BASE_URL` controls the target domain.
-- `HEADLESS=true` runs Chrome headless.
-- `HEADLESS=false` opens Chrome visibly for debugging.
+- `HEADLESS=true` runs Chrome headless by default.
+- `HEADLESS=false` opens Chrome visibly when set in `.env`.
+- `ACTION_DELAY=1.5` slows visible page actions when set in `.env`.
+
+For ad hoc debugging, prefer pytest CLI flags:
+
+```powershell
+.venv\Scripts\pytest --headed
+```
+
+For a headed slow-motion run:
+
+```powershell
+.venv\Scripts\pytest --headed --action-delay=2
+```
 
 ## Browser Scope
 
 This v1 implementation is intentionally Chrome-only to match the original Playwright project's Chromium-only setup. Selenium Manager resolves the Chrome driver automatically, so no driver binary is committed.
+
+## Automation Strategy
+
+Project automation practices, locator priority, debugging workflow, and audit checklist are documented in [docs/AUTOMATION_STRATEGY.md](docs/AUTOMATION_STRATEGY.md).
 
 ## Coverage
 

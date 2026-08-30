@@ -52,6 +52,12 @@ The default pytest configuration writes a self-contained HTML report to:
 reports/report.html
 ```
 
+Runtime logs are written to:
+
+```text
+reports/test.log
+```
+
 Failure screenshots are saved to `screenshots/` and attached to the pytest-html report.
 
 ## Environment
@@ -79,6 +85,12 @@ For a headed slow-motion run:
 
 ```powershell
 .venv\Scripts\pytest --headed --action-delay=2
+```
+
+To show framework logs in the terminal while debugging:
+
+```powershell
+.venv\Scripts\pytest --log-cli-level=INFO
 ```
 
 ## Browser Scope

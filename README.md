@@ -9,6 +9,7 @@ A Selenium + Python migration of the Playwright TodoMVC assessment. This project
 - pytest
 - pytest-html
 - pytest-xdist
+- allure-pytest
 - python-dotenv
 - Chrome, Firefox, and Edge via Selenium Manager
 - Selenium Grid through Docker Compose
@@ -61,6 +62,13 @@ reports/test.log
 ```
 
 Failure screenshots are saved to `screenshots/` and attached to the pytest-html report.
+
+Allure reporting is also supported for richer local/CI evidence:
+
+```powershell
+.\.venv\Scripts\python -m pytest --alluredir reports/allure-results
+.\scripts\run-allure.ps1
+```
 
 ## Environment
 
@@ -214,6 +222,8 @@ PowerShell wrappers are provided for common runs:
 .\scripts\run-local.ps1 -Browser firefox -Viewport mobile
 .\scripts\run-parallel.ps1 -Workers auto -Browser chrome,firefox,edge
 .\scripts\run-grid.ps1 -Workers 3 -Browser chrome,firefox,edge
+.\scripts\run-allure.ps1 -Workers 2 -Browser chrome,firefox
+.\scripts\open-allure-report.ps1
 ```
 
 These scripts invoke pytest through the virtualenv Python interpreter and keep the same options available for ad hoc runs.

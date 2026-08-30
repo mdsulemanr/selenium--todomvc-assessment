@@ -76,6 +76,7 @@ Set the default `GITHUB_TOKEN` permissions to least privilege, then increase per
 CI should preserve test evidence without committing generated files:
 
 - Upload `reports/report.html` for pytest-html results.
+- Upload `reports/allure-results/` when Allure is enabled.
 - Upload `screenshots/` for failure evidence.
 - Keep artifacts short-lived unless longer retention is required for audit.
 - Prefer headless CI runs; use headed or slow-motion runs locally for visual debugging.
@@ -95,5 +96,6 @@ Before accepting CI/CD changes, verify:
 - Secrets are read only from GitHub Secrets.
 - `GITHUB_TOKEN` permissions follow least privilege.
 - Reports and screenshots are uploaded as artifacts, not committed.
+- Allure result directories are uploaded as generated artifacts, not committed.
 - Selenium browser matrix runs use the same pytest options documented for local execution.
 - The sibling Playwright project is not modified.

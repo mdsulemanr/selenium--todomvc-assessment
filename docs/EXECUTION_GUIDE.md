@@ -179,6 +179,64 @@ Stop the Grid:
 .\scripts\stop-grid.ps1
 ```
 
+## Reporting
+
+The project keeps `pytest-html` as the default lightweight report:
+
+```text
+reports/report.html
+```
+
+Use Allure when you need richer evidence for review, demos, or CI artifacts:
+
+```powershell
+.\.venv\Scripts\python -m pytest --alluredir reports/allure-results
+```
+
+Run Allure with parallel execution:
+
+```powershell
+.\.venv\Scripts\python -m pytest -n 2 --alluredir reports/allure-results
+```
+
+Run Allure with browser parameterization:
+
+```powershell
+.\.venv\Scripts\python -m pytest --browser chrome,firefox,edge --alluredir reports/allure-results
+```
+
+Use the helper script:
+
+```powershell
+.\scripts\run-allure.ps1
+.\scripts\run-allure.ps1 -Workers 2 -Browser chrome,firefox
+```
+
+The pytest Allure adapter writes raw results to:
+
+```text
+reports/allure-results
+```
+
+If the Allure CLI is installed, generate and open the HTML report:
+
+```powershell
+allure generate reports/allure-results -o reports/allure-report --clean
+allure open reports/allure-report
+```
+
+or:
+
+```powershell
+.\scripts\open-allure-report.ps1
+```
+
+Reporting choices:
+
+- `pytest-html`: simple report, low maintenance, already built into the default run.
+- `Allure`: richer report with screenshots, environment metadata, steps, labels, and CI-friendly artifacts.
+- `ReportPortal`: centralized live reporting dashboard for larger teams, but requires a running service and credentials.
+
 ## Docker Guidance
 
 Docker is not mandatory for every live automation project.

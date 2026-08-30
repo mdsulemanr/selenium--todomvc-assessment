@@ -1,6 +1,8 @@
 import logging
 import os
+import platform
 import re
+import sys
 from pathlib import Path
 
 import pytest
@@ -12,6 +14,11 @@ from selenium.webdriver.firefox.options import Options as FirefoxOptions
 
 from config.settings import ACTION_DELAY, BASE_URL, DEFAULT_TIMEOUT, HEADLESS
 from pages.todo_page import TodoPage
+
+try:
+    import allure
+except ImportError:
+    allure = None
 
 
 logger = logging.getLogger(__name__)
@@ -99,6 +106,32 @@ def _start_browser(browser_name, options, remote_url):
 
 def _safe_artifact_name(nodeid):
     return re.sub(r"[^A-Za-z0-9_.-]+", "_", nodeid).strip("_")
+
+
+def _allure_results_dir(config):
+    return getattr(config.option, "allure_report_dir", None)
+
+
+def _write_allure_environment(config):
+    allure_dir = _allure_results_dir(config)
+    if not allure_dir:
+        return
+
+    results_dir = Path(allure_dir)
+    results_dir.mkdir(parents=True, exist_ok=True)
+    remote_url = config.getoption("remote_url")
+    environment = {
+        "Base URL": BASE_URL,
+        "Browser Option": config.getoption("browser"),
+        "Viewport Option": config.getoption("viewport"),
+        "Execution Mode": "Selenium Grid" if remote_url else "Local WebDriver",
+        "Remote URL": remote_url or "not configured",
+        "Headless": str(False if config.getoption("headed") else HEADLESS),
+        "Python": sys.version.split()[0],
+        "Platform": platform.platform(),
+    }
+    lines = [f"{key}={value}" for key, value in environment.items()]
+    (results_dir / "environment.properties").write_text("\n".join(lines), encoding="utf-8")
 
 
 @pytest.fixture
@@ -201,6 +234,10 @@ def pytest_html_report_title(report):
     report.title = "Selenium TodoMVC Assessment Report"
 
 
+def pytest_configure(config):
+    _write_allure_environment(config)
+
+
 def pytest_runtest_setup(item):
     markers = sorted(marker.name for marker in item.iter_markers())
     marker_text = ", ".join(markers) if markers else "none"
@@ -225,11 +262,19 @@ def pytest_runtest_makereport(item, call):
     logger.error("Test failed: %s", item.nodeid)
     logger.error("Failure URL: %s", browser.current_url)
 
+    screenshot_png = browser.get_screenshot_as_png()
     screenshot_dir = Path("screenshots")
     screenshot_dir.mkdir(exist_ok=True)
     screenshot_path = screenshot_dir / f"{_safe_artifact_name(item.nodeid)}.png"
-    browser.save_screenshot(str(screenshot_path))
+    screenshot_path.write_bytes(screenshot_png)
     logger.info("Saved failure screenshot: %s", screenshot_path)
 
     report.extras = getattr(report, "extras", [])
     report.extras.append(extras.image(str(screenshot_path)))
+
+    if allure is not None and _allure_results_dir(item.config):
+        allure.attach(
+            screenshot_png,
+            name="failure screenshot",
+            attachment_type=allure.attachment_type.PNG,
+        )

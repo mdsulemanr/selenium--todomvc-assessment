@@ -87,6 +87,17 @@ CI should preserve test evidence without committing generated files:
 
 Use dependency caching to speed up CI, but never cache paths containing secrets, tokens, `.env`, browser profiles, reports, or screenshots.
 
+## Dependency Maintenance
+
+The repository includes `.github/dependabot.yml` for weekly dependency update PRs.
+
+Dependabot coverage:
+
+- `pip`: Python packages pinned in `requirements.txt`.
+- `github-actions`: workflow actions used under `.github/workflows/`.
+
+Dependabot PRs should be reviewed manually. Do not auto-merge dependency updates without the quality gate and Selenium smoke checks passing.
+
 ## Audit Checklist
 
 Before accepting CI/CD changes, verify:
@@ -100,5 +111,6 @@ Before accepting CI/CD changes, verify:
 - `GITHUB_TOKEN` permissions follow least privilege.
 - Reports and screenshots are uploaded as artifacts, not committed.
 - Allure result directories are uploaded as generated artifacts, not committed.
+- Dependabot updates remain reviewable and do not auto-merge.
 - Selenium browser matrix runs use the same pytest options documented for local execution.
 - The sibling Playwright project is not modified.

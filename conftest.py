@@ -1,4 +1,5 @@
 import logging
+import os
 import re
 from pathlib import Path
 
@@ -35,6 +36,24 @@ def _csv_option(value, allowed_values, option_name):
     return selected
 
 
+def _edge_binary_location():
+    candidates = []
+    for root in (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)")):
+        if not root:
+            continue
+        root_path = Path(root)
+        candidates.append(root_path / "Microsoft" / "Edge" / "Application" / "msedge.exe")
+        edge_core = root_path / "Microsoft" / "EdgeCore"
+        if edge_core.exists():
+            candidates.extend(sorted(edge_core.glob("*/msedge.exe"), reverse=True))
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+
+    return None
+
+
 def _browser_options(browser_name, headless, viewport_name):
     width, height = VIEWPORTS[viewport_name]
 
@@ -54,6 +73,9 @@ def _browser_options(browser_name, headless, viewport_name):
         return options
 
     options = EdgeOptions()
+    edge_binary = _edge_binary_location()
+    if edge_binary:
+        options.binary_location = edge_binary
     if headless:
         options.add_argument("--headless=new")
     options.add_argument(f"--window-size={width},{height}")

@@ -226,6 +226,8 @@ Git/GitHub workflow, future CI job strategy, environment handling, and artifact 
 
 Logging principles for local debugging, CI triage, and audit evidence are documented in [docs/LOGGING_STRATEGY.md](docs/LOGGING_STRATEGY.md).
 
+Detailed execution commands for headed mode, parameterization, xdist parallelism, Selenium Grid, Docker, and browser support are documented in [docs/EXECUTION_GUIDE.md](docs/EXECUTION_GUIDE.md).
+
 ## Coverage
 
 - Add and complete todos

@@ -206,6 +206,22 @@ docker --version
 docker compose version
 ```
 
+Current Docker Desktop for Windows requires a supported Windows version and container backend. For the normal WSL 2 backend, verify:
+
+```powershell
+winver
+wsl --version
+```
+
+Expected baseline for current Docker Desktop:
+
+```text
+Windows 10 Pro/Enterprise/Education 22H2 build 19045 or newer
+or Windows 11 Pro/Enterprise/Education 23H2 build 22631 or newer
+WSL 2.1.5 or newer
+hardware virtualization enabled
+```
+
 If those commands fail, install Docker Desktop or continue using local runs:
 
 ```powershell
@@ -213,6 +229,8 @@ If those commands fail, install Docker Desktop or continue using local runs:
 .\.venv\Scripts\python -m pytest -n 2
 .\.venv\Scripts\python -m pytest --browser chrome,firefox
 ```
+
+If the OS is older than Docker's supported baseline, update Windows first, enable/install WSL 2, restart the machine, then install Docker Desktop.
 
 ## Browser Support Notes
 

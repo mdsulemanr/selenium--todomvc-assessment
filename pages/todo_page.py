@@ -1,3 +1,4 @@
+import logging
 from html import escape
 from time import monotonic
 
@@ -10,6 +11,9 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 from config.settings import BASE_URL, DEFAULT_TIMEOUT
 from test_data.routes import ROUTES
+
+
+logger = logging.getLogger(__name__)
 
 
 class TodoPage:
@@ -45,10 +49,13 @@ class TodoPage:
         return False
 
     def open_fresh_todomvc(self):
-        self.driver.get(f"{BASE_URL}{ROUTES['all']}")
+        url = f"{BASE_URL}{ROUTES['all']}"
+        logger.info("Opening fresh TodoMVC session")
+        logger.debug("Navigating to %s", url)
+        self.driver.get(url)
         self.driver.execute_script("localStorage.clear();")
         self.driver.refresh()
-        self.wait.until(EC.url_to_be(f"{BASE_URL}{ROUTES['all']}"))
+        self.wait.until(EC.url_to_be(url))
         self.new_todo_input
         self.pause_for_observation()
 
@@ -56,6 +63,7 @@ class TodoPage:
         if self.action_delay <= 0:
             return
 
+        logger.debug("Pausing %.2f seconds for observation", self.action_delay)
         deadline = monotonic() + self.action_delay
         try:
             WebDriverWait(self.driver, self.action_delay + 0.5, poll_frequency=0.1).until(
@@ -84,6 +92,8 @@ class TodoPage:
         return self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, name)))
 
     def add_todo(self, item_text: str):
+        logger.info("Adding todo item")
+        logger.debug("Todo text: %s", item_text)
         input_box = self.new_todo_input
         input_box.clear()
         input_box.send_keys(item_text)
@@ -94,6 +104,8 @@ class TodoPage:
         self.pause_for_observation()
 
     def toggle_todo(self, item_text: str):
+        logger.info("Completing todo item")
+        logger.debug("Todo text: %s", item_text)
         toggle = self.todo_toggle(item_text)
         if not toggle.is_selected():
             toggle.click()
@@ -101,6 +113,7 @@ class TodoPage:
         self.pause_for_observation()
 
     def select_filter(self, name: str):
+        logger.info("Selecting %s filter", name)
         self.filter_link(name).click()
         self.pause_for_observation()
 

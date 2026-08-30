@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import pytest
@@ -9,6 +10,9 @@ from config.settings import ACTION_DELAY, HEADLESS
 from pages.todo_page import TodoPage
 
 
+logger = logging.getLogger(__name__)
+
+
 @pytest.fixture
 def driver(request):
     headless = False if request.config.getoption("headed") else HEADLESS
@@ -18,9 +22,13 @@ def driver(request):
         options.add_argument("--headless=new")
     options.add_argument("--window-size=1280,720")
 
+    logger.info("Starting Chrome browser; headless=%s", headless)
     browser = webdriver.Chrome(options=options)
-    yield browser
-    browser.quit()
+    try:
+        yield browser
+    finally:
+        logger.info("Closing Chrome browser")
+        browser.quit()
 
 
 @pytest.fixture
@@ -67,6 +75,7 @@ def pytest_runtest_makereport(item, call):
     screenshot_dir.mkdir(exist_ok=True)
     screenshot_path = screenshot_dir / f"{item.name}.png"
     browser.save_screenshot(str(screenshot_path))
+    logger.info("Saved failure screenshot: %s", screenshot_path)
 
     report.extras = getattr(report, "extras", [])
     report.extras.append(extras.image(str(screenshot_path)))

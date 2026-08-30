@@ -91,6 +91,8 @@ Project automation practices, locator priority, debugging workflow, and audit ch
 
 Git/GitHub workflow, future CI job strategy, environment handling, and artifact practices are documented in [docs/CI_CD_STRATEGY.md](docs/CI_CD_STRATEGY.md).
 
+Logging principles for local debugging, CI triage, and audit evidence are documented in [docs/LOGGING_STRATEGY.md](docs/LOGGING_STRATEGY.md).
+
 ## Coverage
 
 - Add and complete todos

@@ -34,7 +34,7 @@ git push origin --delete feature/<short-change-name>
 
 ## GitHub Actions Strategy
 
-No workflow YAML exists in this repository yet. When CI is added, keep it small and aligned with local commands.
+The repository includes `.github/workflows/ci.yml`. Keep it small and aligned with local commands.
 
 Recommended jobs:
 
@@ -53,9 +53,9 @@ Recommended workflow behavior:
 Recommended command progression:
 
 ```powershell
-.venv\Scripts\pytest
-.venv\Scripts\pytest -n auto
-.venv\Scripts\pytest -n 3 --remote-url http://localhost:4444 --browser chrome,firefox,edge
+python -m pytest --alluredir reports/allure-results
+python -m pytest -n auto --alluredir reports/allure-results
+python -m pytest -n 3 --remote-url http://localhost:4444 --browser chrome,firefox,edge --alluredir reports/allure-results
 ```
 
 ## Environment Variables and Secrets

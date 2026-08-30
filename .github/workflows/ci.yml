@@ -21,7 +21,7 @@ env:
 jobs:
   smoke:
     name: Smoke
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Check out repository
@@ -40,13 +40,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run smoke tests
-        run: pytest -m smoke
+        run: python -m pytest -m smoke --alluredir reports/allure-results
 
-      - name: Upload HTML report
+      - name: Upload reports and logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-report
+          name: smoke-reports
           path: reports/
           if-no-files-found: ignore
 
@@ -60,7 +60,7 @@ jobs:
 
   regression:
     name: Regression
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     if: github.event_name != 'pull_request'
 
     steps:
@@ -80,13 +80,13 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run regression tests
-        run: pytest -m regression
+        run: python -m pytest -m regression --alluredir reports/allure-results
 
-      - name: Upload HTML report
+      - name: Upload reports and logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: regression-report
+          name: regression-reports
           path: reports/
           if-no-files-found: ignore
 

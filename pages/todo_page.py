@@ -12,7 +12,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from config.settings import BASE_URL, DEFAULT_TIMEOUT
 from test_data.routes import ROUTES
 
-
 logger = logging.getLogger(__name__)
 
 

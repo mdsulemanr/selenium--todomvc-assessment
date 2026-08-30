@@ -84,6 +84,19 @@ allure generate reports/allure-results -o reports/allure-report --clean
 allure open reports/allure-report
 ```
 
+Run quality checks before committing:
+
+```powershell
+.\scripts\run-quality.ps1
+```
+
+The quality gate runs Ruff plus pytest collection:
+
+```powershell
+.\.venv\Scripts\python -m ruff check .
+.\.venv\Scripts\python -m pytest --collect-only -q
+```
+
 ## Environment
 
 `.env.example` provides the default target:
@@ -238,6 +251,7 @@ PowerShell wrappers are provided for common runs:
 .\scripts\run-grid.ps1 -Workers 3 -Browser chrome,firefox,edge
 .\scripts\run-allure.ps1 -Workers 2 -Browser chrome,firefox
 .\scripts\open-allure-report.ps1
+.\scripts\run-quality.ps1
 ```
 
 These scripts invoke pytest through the virtualenv Python interpreter and keep the same options available for ad hoc runs.

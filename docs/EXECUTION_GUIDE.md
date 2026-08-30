@@ -253,6 +253,25 @@ Reporting choices:
 - `Allure`: richer report with screenshots, environment metadata, steps, labels, and CI-friendly artifacts.
 - `ReportPortal`: centralized live reporting dashboard for larger teams, but requires a running service and credentials.
 
+## Quality Gates
+
+Quality gates catch basic code and test-configuration mistakes before browser tests run.
+
+Run the local quality gate:
+
+```powershell
+.\scripts\run-quality.ps1
+```
+
+Manual equivalent:
+
+```powershell
+.\.venv\Scripts\python -m ruff check .
+.\.venv\Scripts\python -m pytest --collect-only -q
+```
+
+Ruff checks Python code for unused imports, undefined names, import ordering, common style errors, and pytest-specific issues. Strict pytest config makes unknown markers and invalid pytest config fail early instead of being ignored.
+
 ## Docker Guidance
 
 Docker is not mandatory for every live automation project.

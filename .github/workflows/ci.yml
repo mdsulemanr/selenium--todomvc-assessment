@@ -39,6 +39,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Run quality checks
+        run: |
+          python -m ruff check .
+          python -m pytest --collect-only -q
+
       - name: Run smoke tests
         run: python -m pytest -m smoke --alluredir reports/allure-results
 
@@ -78,6 +83,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Run quality checks
+        run: |
+          python -m ruff check .
+          python -m pytest --collect-only -q
 
       - name: Run regression tests
         run: python -m pytest -m regression --alluredir reports/allure-results

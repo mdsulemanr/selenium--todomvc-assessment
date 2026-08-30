@@ -47,6 +47,7 @@ Recommended workflow behavior:
 - Use `actions/checkout` to fetch the repository.
 - Use `actions/setup-python` with pip caching based on `requirements.txt`.
 - Install dependencies with `python -m pip install --upgrade pip` and `pip install -r requirements.txt`.
+- Run quality checks before browser tests.
 - Run pytest using the same command style used locally.
 - Upload `reports/` and `screenshots/` as artifacts when present.
 
@@ -54,6 +55,8 @@ Recommended command progression:
 
 ```powershell
 python -m pytest --alluredir reports/allure-results
+python -m ruff check .
+python -m pytest --collect-only -q
 python -m pytest -n auto --alluredir reports/allure-results
 python -m pytest -n 3 --remote-url http://localhost:4444 --browser chrome,firefox,edge --alluredir reports/allure-results
 ```

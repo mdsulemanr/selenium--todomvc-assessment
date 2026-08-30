@@ -12,7 +12,19 @@ from selenium.webdriver.support.ui import WebDriverWait
 from config.settings import BASE_URL, DEFAULT_TIMEOUT
 from test_data.routes import ROUTES
 
+try:
+    import allure
+except ImportError:
+    allure = None
+
 logger = logging.getLogger(__name__)
+
+
+def report_step(title):
+    if allure is None:
+        return lambda func: func
+
+    return allure.step(title)
 
 
 class TodoPage:
@@ -49,6 +61,7 @@ class TodoPage:
 
         return False
 
+    @report_step("Open a fresh TodoMVC session")
     def open_fresh_todomvc(self):
         url = f"{BASE_URL}{ROUTES['all']}"
         logger.info("Opening fresh TodoMVC session")
@@ -92,6 +105,7 @@ class TodoPage:
     def filter_link(self, name: str):
         return self.wait.until(EC.element_to_be_clickable((By.LINK_TEXT, name)))
 
+    @report_step("Add todo: {item_text}")
     def add_todo(self, item_text: str):
         logger.info("Adding todo item")
         logger.debug("Todo text: %s", item_text)
@@ -104,6 +118,7 @@ class TodoPage:
         self.visible_todo_item(item_text)
         self.pause_for_observation()
 
+    @report_step("Complete todo: {item_text}")
     def toggle_todo(self, item_text: str):
         logger.info("Completing todo item")
         logger.debug("Todo text: %s", item_text)
@@ -113,37 +128,45 @@ class TodoPage:
         self.wait.until(lambda _: self.todo_toggle(item_text).is_selected())
         self.pause_for_observation()
 
+    @report_step("Select filter: {name}")
     def select_filter(self, name: str):
         logger.info("Selecting %s filter", name)
         self.filter_link(name).click()
         self.pause_for_observation()
 
+    @report_step("Assert remaining todo counter is {count}")
     def assert_items_left(self, count: int):
         noun = "item left" if count == 1 else "items left"
         expected = f"{count} {noun}"
         logger.debug("Expecting todo count text: %s", expected)
         self.wait.until(lambda _: self.todo_count.text == expected)
 
+    @report_step("Assert visible todo item count is {count}")
     def assert_total_items(self, count: int):
         logger.debug("Expecting total visible todo rows: %d", count)
         self.wait.until(lambda _: len(self.todo_items) == count)
 
+    @report_step("Assert selected filter is {name}")
     def assert_selected_filter(self, name: str, route: str):
         logger.debug("Expecting %s filter route: %s", name, route)
         self.wait.until(EC.url_to_be(f"{BASE_URL}{route}"))
         classes = self.filter_link(name).get_attribute("class") or ""
         assert "selected" in classes.split(), f"Expected {escape(name)} filter to be selected, got classes: {classes}"
 
+    @report_step("Assert todo is completed: {item_text}")
     def assert_item_completed(self, item_text: str):
         classes = self.todo_item(item_text).get_attribute("class") or ""
         assert "completed" in classes.split(), f"Expected todo '{item_text}' to be completed, got classes: {classes}"
 
+    @report_step("Assert todo is active: {item_text}")
     def assert_item_not_completed(self, item_text: str):
         classes = self.todo_item(item_text).get_attribute("class") or ""
         assert "completed" not in classes.split(), f"Expected todo '{item_text}' to be active, got classes: {classes}"
 
+    @report_step("Assert todo checkbox state for {item_text}")
     def assert_toggle_checked(self, item_text: str, checked: bool = True):
         assert self.todo_toggle(item_text).is_selected() is checked
 
+    @report_step("Assert todo is not visible: {item_text}")
     def assert_item_not_present(self, item_text: str):
         self.wait.until(lambda _: self._matching_todo_item(item_text) is False)

@@ -253,6 +253,8 @@ Reporting choices:
 - `Allure`: richer report with screenshots, environment metadata, steps, labels, and CI-friendly artifacts.
 - `ReportPortal`: centralized live reporting dashboard for larger teams, but requires a running service and credentials.
 
+The Allure report includes TodoMVC feature/story labels and user-level steps for adding todos, completing todos, selecting filters, and validating visible state. Step names should describe business behavior, not low-level Selenium calls.
+
 ## Quality Gates
 
 Quality gates catch basic code and test-configuration mistakes before browser tests run.

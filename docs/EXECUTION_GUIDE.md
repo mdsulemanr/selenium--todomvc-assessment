@@ -187,6 +187,22 @@ The project keeps `pytest-html` as the default lightweight report:
 reports/report.html
 ```
 
+Allure has two phases:
+
+```text
+run tests -> write reports/allure-results
+generate/open report -> read reports/allure-report in a local Allure server
+```
+
+Recommended CLI flow:
+
+```powershell
+.\scripts\run-allure.ps1
+.\scripts\open-allure-report.ps1
+```
+
+Use the first command to run tests and write Allure results. Use the second command to generate and open the HTML report.
+
 Use Allure when you need richer evidence for review, demos, or CI artifacts:
 
 ```powershell

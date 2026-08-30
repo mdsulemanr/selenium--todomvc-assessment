@@ -70,6 +70,20 @@ Allure reporting is also supported for richer local/CI evidence:
 .\scripts\run-allure.ps1
 ```
 
+To read the Allure report from the CLI:
+
+```powershell
+.\scripts\run-allure.ps1
+.\scripts\open-allure-report.ps1
+```
+
+Manual equivalent:
+
+```powershell
+allure generate reports/allure-results -o reports/allure-report --clean
+allure open reports/allure-report
+```
+
 ## Environment
 
 `.env.example` provides the default target:

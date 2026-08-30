@@ -39,7 +39,8 @@ No workflow YAML exists in this repository yet. When CI is added, keep it small 
 Recommended jobs:
 
 - `smoke`: run on pull requests; install Python dependencies and execute the fastest reliable Selenium pytest subset.
-- `regression`: run on `main` pushes and manual dispatch; execute the full Chrome-only Selenium suite.
+- `regression`: run on `main` pushes and manual dispatch; execute the full default Selenium suite.
+- `grid-matrix`: optional manual or scheduled job; start Selenium Grid and run the browser matrix in parallel.
 
 Recommended workflow behavior:
 
@@ -48,6 +49,14 @@ Recommended workflow behavior:
 - Install dependencies with `python -m pip install --upgrade pip` and `pip install -r requirements.txt`.
 - Run pytest using the same command style used locally.
 - Upload `reports/` and `screenshots/` as artifacts when present.
+
+Recommended command progression:
+
+```powershell
+.venv\Scripts\pytest
+.venv\Scripts\pytest -n auto
+.venv\Scripts\pytest -n 3 --remote-url http://localhost:4444 --browser chrome,firefox,edge
+```
 
 ## Environment Variables and Secrets
 
@@ -70,6 +79,7 @@ CI should preserve test evidence without committing generated files:
 - Upload `screenshots/` for failure evidence.
 - Keep artifacts short-lived unless longer retention is required for audit.
 - Prefer headless CI runs; use headed or slow-motion runs locally for visual debugging.
+- Keep Grid jobs explicit so routine pull request feedback does not pay for the full browser matrix unless required.
 
 Use dependency caching to speed up CI, but never cache paths containing secrets, tokens, `.env`, browser profiles, reports, or screenshots.
 
@@ -85,5 +95,5 @@ Before accepting CI/CD changes, verify:
 - Secrets are read only from GitHub Secrets.
 - `GITHUB_TOKEN` permissions follow least privilege.
 - Reports and screenshots are uploaded as artifacts, not committed.
-- Selenium remains Chrome-only unless broader browser coverage is explicitly requested.
+- Selenium browser matrix runs use the same pytest options documented for local execution.
 - The sibling Playwright project is not modified.

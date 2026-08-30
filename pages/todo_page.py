@@ -37,7 +37,9 @@ class TodoPage:
         return self.wait.until(EC.visibility_of_element_located((By.CSS_SELECTOR, '[data-testid="todo-count"]')))
 
     def _matching_todo_item(self, item_text: str):
-        for item in self.todo_items:
+        items = self.todo_items
+        logger.debug("Searching %d todo rows for matching title", len(items))
+        for item in items:
             try:
                 title = item.find_element(By.CSS_SELECTOR, '[data-testid="todo-title"]')
             except NoSuchElementException:
@@ -120,12 +122,15 @@ class TodoPage:
     def assert_items_left(self, count: int):
         noun = "item left" if count == 1 else "items left"
         expected = f"{count} {noun}"
+        logger.debug("Expecting todo count text: %s", expected)
         self.wait.until(lambda _: self.todo_count.text == expected)
 
     def assert_total_items(self, count: int):
+        logger.debug("Expecting total visible todo rows: %d", count)
         self.wait.until(lambda _: len(self.todo_items) == count)
 
     def assert_selected_filter(self, name: str, route: str):
+        logger.debug("Expecting %s filter route: %s", name, route)
         self.wait.until(EC.url_to_be(f"{BASE_URL}{route}"))
         classes = self.filter_link(name).get_attribute("class") or ""
         assert "selected" in classes.split(), f"Expected {escape(name)} filter to be selected, got classes: {classes}"

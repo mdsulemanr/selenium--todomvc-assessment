@@ -8,8 +8,10 @@ A Selenium + Python migration of the Playwright TodoMVC assessment. This project
 - Selenium
 - pytest
 - pytest-html
+- pytest-xdist
 - python-dotenv
-- Chrome via Selenium Manager
+- Chrome, Firefox, and Edge via Selenium Manager
+- Selenium Grid through Docker Compose
 
 ## Structure
 
@@ -43,7 +45,7 @@ copy .env.example .env
 ## Run Tests
 
 ```powershell
-.venv\Scripts\pytest
+.\.venv\Scripts\python -m pytest
 ```
 
 The default pytest configuration writes a self-contained HTML report to:
@@ -78,24 +80,143 @@ ACTION_DELAY=0
 For ad hoc debugging, prefer pytest CLI flags:
 
 ```powershell
-.venv\Scripts\pytest --headed
+.\.venv\Scripts\python -m pytest --headed
 ```
 
 For a headed slow-motion run:
 
 ```powershell
-.venv\Scripts\pytest --headed --action-delay=2
+.\.venv\Scripts\python -m pytest --headed --action-delay=2
 ```
 
 To show framework logs in the terminal while debugging:
 
 ```powershell
-.venv\Scripts\pytest --log-cli-level=INFO
+.\.venv\Scripts\python -m pytest --log-cli-level=INFO
 ```
 
-## Browser Scope
+## Command Reference
 
-This v1 implementation is intentionally Chrome-only to match the original Playwright project's Chromium-only setup. Selenium Manager resolves the Chrome driver automatically, so no driver binary is committed.
+Use the virtualenv Python module form for consistent Windows execution:
+
+```powershell
+.\.venv\Scripts\python -m pytest
+```
+
+Run visibly:
+
+```powershell
+.\.venv\Scripts\python -m pytest --headed
+.\.venv\Scripts\python -m pytest --headed --action-delay=1
+.\.venv\Scripts\python -m pytest --headed --viewport mobile
+```
+
+Run one browser or viewport profile:
+
+```powershell
+.\.venv\Scripts\python -m pytest --browser chrome
+.\.venv\Scripts\python -m pytest --browser firefox
+.\.venv\Scripts\python -m pytest --browser edge
+.\.venv\Scripts\python -m pytest --viewport mobile
+```
+
+Run a parameterized matrix. This collects each test once for every browser/viewport combination:
+
+```powershell
+.\.venv\Scripts\python -m pytest --browser chrome,firefox,edge
+.\.venv\Scripts\python -m pytest --browser chrome,firefox,edge --viewport desktop,mobile
+```
+
+Run in parallel with pytest-xdist. `-n 2` starts two pytest workers, so two test cases can own separate browser sessions at the same time:
+
+```powershell
+.\.venv\Scripts\python -m pytest -n 2
+.\.venv\Scripts\python -m pytest -n auto
+.\.venv\Scripts\python -m pytest -n 3 --browser chrome,firefox,edge
+```
+
+Check collection without opening browsers:
+
+```powershell
+.\.venv\Scripts\python -m pytest --collect-only -q
+.\.venv\Scripts\python -m pytest --collect-only -q --browser chrome,firefox,edge --viewport desktop,mobile
+```
+
+Concept mapping:
+
+- `--browser` and `--viewport` control parameterization: what combinations should run.
+- `-n 2`, `-n 3`, or `-n auto` controls parallelism: how many pytest workers run at once.
+- `--remote-url` controls Grid execution: where browser sessions are created.
+- Docker is only required for local Selenium Grid, not for normal local browser runs.
+
+Selenium Manager resolves local browser drivers automatically, so no driver binary is committed.
+
+Learning sequence:
+
+```powershell
+.\.venv\Scripts\python -m pytest --headed
+.\.venv\Scripts\python -m pytest --headed --viewport mobile
+.\.venv\Scripts\python -m pytest --browser chrome,firefox,edge --collect-only -q
+.\.venv\Scripts\python -m pytest --browser chrome,firefox,edge
+.\.venv\Scripts\python -m pytest -n 2
+.\.venv\Scripts\python -m pytest -n 3 --browser chrome,firefox,edge
+```
+
+Parameterization means pytest creates multiple test cases from the same test code. For example, `--browser chrome,firefox,edge` runs each test once for Chrome, once for Firefox, and once for Edge. Without `-n`, those cases run sequentially.
+
+Parallelism means pytest-xdist starts multiple workers. Each worker gets its own WebDriver session, so `-n 2` can run two browser sessions at the same time.
+
+## Selenium Grid
+
+Start the local Docker Compose Grid:
+
+```powershell
+.\scripts\start-grid.ps1
+```
+
+Run tests remotely through Grid:
+
+```powershell
+.\.venv\Scripts\python -m pytest --remote-url http://localhost:4444 --browser chrome
+.\.venv\Scripts\python -m pytest -n 3 --remote-url http://localhost:4444 --browser chrome,firefox,edge
+```
+
+Stop the Grid:
+
+```powershell
+.\scripts\stop-grid.ps1
+```
+
+The Grid uses Selenium Docker images for Chrome, Firefox, and Edge nodes. Set `SELENIUM_IMAGE_TAG` before starting the Grid if a pinned image tag is required.
+
+If Docker is not installed or `docker --version` fails, skip Grid commands and use local browser or local parallel commands until Docker Desktop is available.
+
+## Browser Notes
+
+Local browser runs require the selected browser to be installed on the machine. Check availability with:
+
+```powershell
+chrome --version
+firefox --version
+msedge --version
+```
+
+If Edge is not installed, not on PATH, or installed in a non-standard location, local `--browser edge` may fail or hang during startup. Grid-based Edge can still work because the Docker node image contains the browser.
+
+Safari is not included in this Windows-focused project because Safari WebDriver requires Apple's `safaridriver` and is intended for Safari on macOS. Internet Explorer is not included because standalone IE is no longer a normal enterprise browser target; Selenium's IE support is now mainly for Edge IE Compatibility Mode and needs special Windows configuration.
+
+## Script Shortcuts
+
+PowerShell wrappers are provided for common runs:
+
+```powershell
+.\scripts\run-local.ps1
+.\scripts\run-local.ps1 -Browser firefox -Viewport mobile
+.\scripts\run-parallel.ps1 -Workers auto -Browser chrome,firefox,edge
+.\scripts\run-grid.ps1 -Workers 3 -Browser chrome,firefox,edge
+```
+
+These scripts invoke pytest through the virtualenv Python interpreter and keep the same options available for ad hoc runs.
 
 ## Automation Strategy
 

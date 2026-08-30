@@ -34,20 +34,32 @@ git push origin --delete feature/<short-change-name>
 
 ## GitHub Actions Strategy
 
-No workflow YAML exists in this repository yet. When CI is added, keep it small and aligned with local commands.
+The repository includes `.github/workflows/ci.yml`. Keep it small and aligned with local commands.
 
 Recommended jobs:
 
 - `smoke`: run on pull requests; install Python dependencies and execute the fastest reliable Selenium pytest subset.
-- `regression`: run on `main` pushes and manual dispatch; execute the full Chrome-only Selenium suite.
+- `regression`: run on `main` pushes and manual dispatch; execute the full default Selenium suite.
+- `grid-matrix`: optional manual or scheduled job; start Selenium Grid and run the browser matrix in parallel.
 
 Recommended workflow behavior:
 
 - Use `actions/checkout` to fetch the repository.
 - Use `actions/setup-python` with pip caching based on `requirements.txt`.
 - Install dependencies with `python -m pip install --upgrade pip` and `pip install -r requirements.txt`.
+- Run quality checks before browser tests.
 - Run pytest using the same command style used locally.
 - Upload `reports/` and `screenshots/` as artifacts when present.
+
+Recommended command progression:
+
+```powershell
+python -m pytest --alluredir reports/allure-results
+python -m ruff check .
+python -m pytest --collect-only -q
+python -m pytest -n auto --alluredir reports/allure-results
+python -m pytest -n 3 --remote-url http://localhost:4444 --browser chrome,firefox,edge --alluredir reports/allure-results
+```
 
 ## Environment Variables and Secrets
 
@@ -67,11 +79,24 @@ Set the default `GITHUB_TOKEN` permissions to least privilege, then increase per
 CI should preserve test evidence without committing generated files:
 
 - Upload `reports/report.html` for pytest-html results.
+- Upload `reports/allure-results/` when Allure is enabled.
 - Upload `screenshots/` for failure evidence.
 - Keep artifacts short-lived unless longer retention is required for audit.
 - Prefer headless CI runs; use headed or slow-motion runs locally for visual debugging.
+- Keep Grid jobs explicit so routine pull request feedback does not pay for the full browser matrix unless required.
 
 Use dependency caching to speed up CI, but never cache paths containing secrets, tokens, `.env`, browser profiles, reports, or screenshots.
+
+## Dependency Maintenance
+
+The repository includes `.github/dependabot.yml` for weekly dependency update PRs.
+
+Dependabot coverage:
+
+- `pip`: Python packages pinned in `requirements.txt`.
+- `github-actions`: workflow actions used under `.github/workflows/`.
+
+Dependabot PRs should be reviewed manually. Do not auto-merge dependency updates without the quality gate and Selenium smoke checks passing.
 
 ## Audit Checklist
 
@@ -85,5 +110,7 @@ Before accepting CI/CD changes, verify:
 - Secrets are read only from GitHub Secrets.
 - `GITHUB_TOKEN` permissions follow least privilege.
 - Reports and screenshots are uploaded as artifacts, not committed.
-- Selenium remains Chrome-only unless broader browser coverage is explicitly requested.
+- Allure result directories are uploaded as generated artifacts, not committed.
+- Dependabot updates remain reviewable and do not auto-merge.
+- Selenium browser matrix runs use the same pytest options documented for local execution.
 - The sibling Playwright project is not modified.

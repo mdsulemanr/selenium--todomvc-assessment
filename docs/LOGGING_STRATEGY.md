@@ -40,6 +40,13 @@ Avoid:
 
 Tests should stay readable. Page objects and fixtures are the best places for most diagnostic logs because they already own browser setup and user actions.
 
+Useful examples:
+
+- `INFO`: `Starting test: tests/test_todomvc.py::test_add_and_complete_todos; markers=regression, smoke`
+- `INFO`: `Selecting Active filter`
+- `DEBUG`: `Searching 3 todo rows for matching title`
+- `ERROR`: `Failure URL: https://demo.playwright.dev/todomvc/#/active`
+
 ## Pytest Usage
 
 Prefer pytest's built-in logging controls for local debugging:
@@ -59,6 +66,17 @@ log_file_date_format = %Y-%m-%d %H:%M:%S
 ```
 
 Keep CLI logging off by default unless actively debugging, so normal test output remains concise.
+
+## Failure Investigation
+
+When a local or CI test fails, inspect evidence in this order:
+
+1. `reports/test.log` for test flow, runtime configuration, browser version, and failure URL.
+2. `reports/report.html` for pytest-html failure details.
+3. `screenshots/` for the browser state at failure.
+4. GitHub Actions job logs for environment setup or dependency failures.
+
+Use DEBUG logs when the failure appears related to matching elements, routes, counts, or test data. Keep INFO logs limited to the timeline a reviewer needs to understand the run quickly.
 
 ## CI and Artifacts
 

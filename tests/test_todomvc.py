@@ -1,9 +1,13 @@
+import allure
 import pytest
 
 from test_data.routes import ROUTES
 from test_data.todos import TODO_DATA
 
 
+@allure.feature("TodoMVC")
+@allure.story("Todo item lifecycle")
+@allure.severity(allure.severity_level.CRITICAL)
 @pytest.mark.smoke
 @pytest.mark.regression
 def test_add_and_complete_todos(todo_page):
@@ -30,6 +34,9 @@ def test_add_and_complete_todos(todo_page):
     todo_page.assert_toggle_checked(second_todo, checked=False)
 
 
+@allure.feature("TodoMVC")
+@allure.story("Todo filtering")
+@allure.severity(allure.severity_level.NORMAL)
 @pytest.mark.regression
 def test_filter_behaviour_is_correct(todo_page):
     data = TODO_DATA["filter_scenario"]

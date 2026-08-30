@@ -2,7 +2,7 @@
 
 ## Vision
 
-This project is a compact Selenium Python assessment suite for TodoMVC. The framework should stay app-aware, readable, and easy to audit. Every addition should improve confidence in TodoMVC behavior without turning the project into a generic automation framework.
+This project is a compact Selenium Python assessment suite for TodoMVC with an enterprise-style execution layer. The framework should stay app-aware, readable, and easy to audit while supporting local browsers, Selenium Grid, browser/viewport matrices, and pytest-xdist parallelism.
 
 The sibling Playwright project is intentionally independent. Do not share code, generated artifacts, or framework structure between the two repositories unless explicitly requested.
 
@@ -61,19 +61,41 @@ Avoid duplicating route strings or long-lived test labels directly inside tests 
 Normal run:
 
 ```powershell
-.venv\Scripts\pytest
+.\.venv\Scripts\python -m pytest
 ```
 
 Headed run:
 
 ```powershell
-.venv\Scripts\pytest --headed
+.\.venv\Scripts\python -m pytest --headed
 ```
 
 Headed slow-motion run:
 
 ```powershell
-.venv\Scripts\pytest --headed --action-delay=2
+.\.venv\Scripts\python -m pytest --headed --action-delay=2
+```
+
+Browser and viewport profile runs:
+
+```powershell
+.\.venv\Scripts\python -m pytest --browser firefox
+.\.venv\Scripts\python -m pytest --browser edge --viewport mobile
+.\.venv\Scripts\python -m pytest --browser chrome,firefox,edge --viewport desktop,mobile
+```
+
+Parallel run:
+
+```powershell
+.\.venv\Scripts\python -m pytest -n auto
+```
+
+Selenium Grid run:
+
+```powershell
+.\scripts\start-grid.ps1
+.\.venv\Scripts\python -m pytest -n 3 --remote-url http://localhost:4444 --browser chrome,firefox,edge
+.\scripts\stop-grid.ps1
 ```
 
 Use the pytest-html report for failures:
@@ -94,7 +116,8 @@ Before accepting a framework or test change, verify:
 - Synchronization uses explicit waits, not fixed sleeps.
 - Test data and routes remain centralized when reusable.
 - Page objects expose behavior, not low-level test orchestration.
-- Chrome-only scope is preserved unless cross-browser support is explicitly requested.
+- Cross-browser and Grid runs use the centralized pytest fixture path.
+- The default local run remains Chrome desktop for fast local feedback.
 - `.env`, `.venv/`, reports, screenshots, caches, and generated artifacts remain untracked.
 - `.venv\Scripts\pytest` passes after meaningful changes.
 
@@ -103,7 +126,7 @@ Before accepting a framework or test change, verify:
 Avoid adding:
 
 - Generic base-page layers without a clear current need.
-- Selenium Grid, browser matrices, or CI wiring without a user request.
+- Selenium Grid or browser matrix abstractions outside the centralized pytest fixture path.
 - Broad helper libraries that hide simple TodoMVC behavior.
 - Assertions that depend on layout rather than behavior or state.
 - Slow-motion delays as reliability fixes.
